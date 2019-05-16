@@ -1,56 +1,40 @@
 # **Finding Lane Lines on the Road** 
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
 
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
+### Pipeline. 
 
-Overview
+#### General approach
+
+The following bullet points show the programm flow in sequence
+* Path to sample images are defined and stored
+* All global variables (Canny parameters, Hough parameters, ...) are defined, which are given to the functions later. This allows a easier adaption to trim the parameters
+
 ---
 
-When we drive, we use our eyes to decide where to go.  The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
+The program works in a loop. It will read every image stored in the sample image folder and will process it until all images are processed
+* Image is transformed in a grey scale image with the given function
+* Gaussian blur is used to smooth the image
+* Canny image is used with defined thresholds
+* The size and shape of the mask is defined. A trapezoid is used for this case with boundary conditions defined in the global variables
+* Image is cropped with the defined mask
+* Hough lines are defined in the cropped region --> see below for description of line fitting function
+* The plotted image is weighted with the given function to create the overlay of the original image
 
-In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
+As sad, this process is repeated for every image in the loop.
+For the videos, the same pipeline is used, only the for loop of the sample images is switch with the video controller.
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
+#### draw line function
 
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
+* The slope of every line is caluclated to determine if its a left or right lane
+* Intersection is used define b from y = mx +b
+* The length of the line is later used to calculate the average of every line, this is not really nessesary and can be done on multiple ways
+* According to the calculated slope, the lanes are split in the two groups, left and right
+* From all left and right lanes, one average lane is created, which is transformed back to the coordinate system
 
+### 2. Identify potential shortcomings with your current pipeline
 
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
+Shortcomings are for sure the fixed variables which are optimised for the specific problem but not sufficient for real world usage. A slight change in the environment such as lighting, or angel of the camera would destroy the code. Robustness is not given at all.
 
-1. Describe the pipeline
+### 3. Suggest possible improvements to your pipeline
 
-2. Identify any shortcomings
-
-3. Suggest possible improvements
-
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
----
-
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
-
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/83ec35ee-1e02-48a5-bdb7-d244bd47c2dc/lessons/8c82408b-a217-4d09-b81d-1bda4c6380ef/concepts/4f1870e0-3849-43e4-b670-12e6f2d4b7a7) if you haven't already.
-
-**Step 2:** Open the code in a Jupyter Notebook
-
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out <A HREF="https://www.packtpub.com/books/content/basics-jupyter-notebook-and-python" target="_blank">Cyrille Rossant's Basics of Jupyter Notebook and Python</A> to get started.
-
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
-
-`> jupyter notebook`
-
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
-
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+The masked I used is optimised for the specific camera angle, mounting position, focal length and only for flat roads.
+A few more methods are needed to creat a bit more robust system. One option would be to create a method to track the horizon of the road. Horizontal lines can be detected and therefore the mask can be adapted in every sequence to the needed length. This does not work for curvy roads so high gradients in the hough lines should also show if a curve shows up. ... fun project, lot of things to work on 
